@@ -1,0 +1,91 @@
+/*
+   This example code is in the Public Domain (or CC0 licensed, at your option.)
+
+   Unless required by applicable law or agreed to in writing, this
+   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+   CONDITIONS OF ANY KIND, either express or implied.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "esp_system.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+#include "freertos/event_groups.h"
+
+#include "esp_wifi.h"
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "esp_event_loop.h"
+
+#include "esp_log.h"
+#include "driver/uart.h"
+#include "driver/gpio.h"
+#include "mqtt_client.h"
+#include "lwip/apps/sntp.h"
+
+#include "logger.h"
+#include "uart_debug.h"
+#include "leds.h"
+#include "config.h"
+#include "user_config.h"
+#include "wlab.h"
+#include "network.h"
+
+static void main_task(void *arg);
+
+uint8_t MAC_ADDR[6];
+char MAC_ADDR_STR[13];
+logger_t mlog;
+static uint8_t print_buffer[CONFIG_PRINT_BUFF_SIZE];
+
+static void main_task(void *arg) {
+	// Get time, wait to properly connect with sntp
+  sntp_wait();
+
+  // Start wlab task time properly
+  wlab_start();
+
+	for(;;) {
+		vTaskDelay(1000);
+	}
+}
+
+/******************************************************************************
+ * FunctionName : app_main
+ * Description  : entry of user application, init user function here
+ * Parameters   : none
+ * Returns      : none
+*******************************************************************************/
+void app_main(void) {
+
+	nvs_flash_init();
+	uart_debug_init();
+
+	mlog.init.buff = print_buffer;
+	mlog.init.buff_size = CONFIG_PRINT_BUFF_SIZE;
+	mlog.init.putd = uart_debug_send;
+	mlog.init.level = loggerLevelDebug;
+	mlog.init.name = "main";
+	logger_init(&mlog, NULL);
+
+	esp_efuse_mac_get_default(MAC_ADDR);
+	sprintf(MAC_ADDR_STR, "%02X%02X%02X%02X%02X%02X",
+			MAC_ADDR[5],MAC_ADDR[4],MAC_ADDR[3],MAC_ADDR[2],MAC_ADDR[1],MAC_ADDR[0]);
+	logger_cri(&mlog, "MAC_ADDR: %s\n", MAC_ADDR_STR);
+
+	leds_init();
+	wlab_init();
+
+	wifi_init();	// function blocking until connection
+	mqtt_init();	// function blocking until connection
+
+	xTaskCreate(main_task, "main_task", 2*1024, NULL, 10, NULL);
+}
+
+/*  --------------------------------------------------------------------------
+ *  end of file
+ *  ------------------------------------------------------------------------ */
