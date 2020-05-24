@@ -32,17 +32,17 @@ static bool dht_pin_state_wait(
 #define data_pin_get(self)					(self->init.data_pin_get())
 #define data_pin_set(self, state)		(self->init.data_pin_set(state))
 
-static int32_t bcnt=0;
-static int16_t btimming[40];
+//static int32_t bcnt=0;
+//static int16_t btimming[40];
 
-bool dht_init(dht_t *self) {
+int32_t dht_init(dht_t *self) {
 
 	return(0);
 }
 
-bool dht_read(dht_t *self, int16_t *temp, int16_t *rh) {
-	bool rc=false;
-	int32_t bit;
+int32_t dht_read(dht_t *self, int16_t *temp, int16_t *rh) {
+	int32_t rc=1;
+	int32_t bit=0, bcnt=0;
 	uint8_t crc=0, computed_crc=0;
 
 	*rh = 0;
@@ -83,9 +83,10 @@ bool dht_read(dht_t *self, int16_t *temp, int16_t *rh) {
 		}
 	}
 	taskEXIT_CRITICAL();
-	for(int32_t i=0; i<40; i++) {
-		logger_info(log(self), "btimming[%d]=%d\n", i, btimming[i]);
-	}
+
+//	for(int32_t i=0; i<40; i++) {
+//		logger_info(log(self), "btimming[%d]=%d\n", i, btimming[i]);
+//	}
 
 	computed_crc = dht_checksum(self, *temp, *rh);
 	if(crc != computed_crc || crc == 0) {
@@ -94,7 +95,7 @@ bool dht_read(dht_t *self, int16_t *temp, int16_t *rh) {
 		goto exit;
 	}
 
-	rc = true;
+	rc = 0;
 exit:
 	return(rc);
 }
@@ -112,7 +113,7 @@ static bool dht_read_bit(dht_t *self, int32_t *bit) {
 		logger_error(log(self), "T_REH_MAX exceed!, break...\n");
 		goto exit;
 	}
-	btimming[bcnt] = duration;
+//	btimming[bcnt] = duration;
 	*bit = (20 < duration) ? 1:0;
 	rc = true;
 exit:

@@ -30,23 +30,33 @@
 #include "leds.h"
 #include "config.h"
 #include "user_config.h"
-#include "wlab.h"
 #include "wlab_dht.h"
 #include "network.h"
 #include "wlab/wlab_pt.h"
+
 
 static void main_task(void *arg);
 
 uint8_t MAC_ADDR[6];
 char MAC_ADDR_STR[13];
 logger_t mlog;
+
+#define CONFIG_PRINT_BUFF_SIZE				(256)
 static uint8_t print_buffer[CONFIG_PRINT_BUFF_SIZE];
 
 static void main_task(void *arg) {
+// SNTP sync period can be set in sntp_opts.h file
+// #define SNTP_UPDATE_DELAY					(20000) // milliseconds
 	sntp_wait();
-//	wlab_start();
-	wlab_dht_start();
+
+#if CONFIG_SENSOR_PT == 1
 	wlab_pt_start();
+#elif CONFIG_SENSOR_DHT21 == 1
+	wlab_dht_start();
+#else
+	;
+#endif
+
 	for(;;) {
 		vTaskDelay(1000);
 	}
@@ -75,9 +85,14 @@ void app_main(void) {
 	logger_cri(&mlog, "MAC_ADDR: %s\n", MAC_ADDR_STR);
 
 	leds_init();
-//	wlab_init();
+
+#if CONFIG_SENSOR_PT == 1
 	wlab_pt_init();
+#elif CONFIG_SENSOR_DHT21 == 1
 	wlab_dht_init();
+#else
+	;
+#endif
 
 	wifi_init();	// function blocking until connection
 	mqtt_init();	// function blocking until connection

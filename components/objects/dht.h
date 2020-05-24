@@ -40,8 +40,8 @@ typedef struct {
 	} init;
 } dht_t;
 
-bool dht_init(dht_t *self);
-bool dht_read(dht_t *self, int16_t *temp, int16_t *rh);
+int32_t dht_init(dht_t *self);
+int32_t dht_read(dht_t *self, int16_t *temp, int16_t *rh);
 
 #endif /* COMPONENTS_OBJECTS_DHT_H_ */
 /*  --------------------------------------------------------------------------

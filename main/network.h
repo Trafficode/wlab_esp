@@ -7,6 +7,8 @@
 #ifndef MAIN_NETWORK_H_
 #define MAIN_NETWORK_H_
 
+#define CONFIG_MQTT_MAX_PUBLISH_LEN		(512)
+
 void mqtt_init(void);
 void wifi_init(void);
 void sntp_wait(void);

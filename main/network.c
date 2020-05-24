@@ -28,8 +28,8 @@
 #include "leds.h"
 #include "debug.h"
 #include "config.h"
+#include "network.h"
 #include "user_config.h"
-#include "wlab.h"
 
 static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event);
 static esp_err_t wifi_event_handler(void *ctx, system_event_t *event);
