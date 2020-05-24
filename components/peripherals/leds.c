@@ -17,7 +17,7 @@ extern logger_t mlog;
 
 static void leds_task(void *arg);
 
-static uint16_t mqtt_led_state = LED_TOOGLE_FAST;
+static uint16_t mqtt_led_state = LED_OFF;
 static logger_t ledlog;
 
 void leds_init(void) {
@@ -63,7 +63,6 @@ static void leds_task(void *arg) {
 /*  --------------------------------------------------------------------------
  *  end of file
  *  ------------------------------------------------------------------------ */
-
 
 
 

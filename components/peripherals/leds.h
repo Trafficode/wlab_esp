@@ -9,8 +9,8 @@
 
 #define LED_TOOGLE_FAST		(0xAAAA)
 #define LED_TOOGLE_SLOW		(0xF0F0)
-#define LED_ON				(0xFFFF)
-#define LED_OFF				(0x0000)
+#define LED_ON						(0x0000)
+#define LED_OFF						(0xFFFF)
 
 typedef enum {
 	LED_MQTT = 2

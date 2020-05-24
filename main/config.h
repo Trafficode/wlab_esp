@@ -13,7 +13,8 @@
 
 #define CONFIG_MQTT_MAX_PUBLISH_LEN		(256)
 
-#define CONFIG_WLAB_PUB_PERIOD				(10) // minutes
+#define CONFIG_WLAB_PUB_PERIOD				(10) 	// minutes
+#define CONFIG_WLAB_MEASURE_PERIOD		(4)		// secs
 
 #define CONFIG_WLAB_DESC							("PT100")
 #define CONFIG_WLAB_PUB_TOPIC					("/wlabdb")

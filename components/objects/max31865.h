@@ -21,8 +21,6 @@ typedef struct {
 		void (*mosi_pin_write)(int32_t _state);
 		int32_t (*miso_pin_read)(void);
 	} init;
-
-	bool _inited;
 } max31865_t;
 
 /* 	int32_t max31865_init(max31865_t *self)

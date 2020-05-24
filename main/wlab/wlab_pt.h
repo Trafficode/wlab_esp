@@ -1,16 +1,16 @@
 /*  --------------------------------------------------------------------------
- *  wlab_esp: wlab.h  
- *  Created on: 28 wrz 2019
+ *  wlab_esp: wlab_pt.h
+ *  Created on: 24 may 2019
  *  	Author: Trafficode
  *  ------------------------------------------------------------------------ */
 
-#ifndef MAIN_WLAB_H_
-#define MAIN_WLAB_H_
+#ifndef MAIN_WLAB_PT_H_
+#define MAIN_WLAB_PT_H_
 
 void wlab_pt_init(void);
 void wlab_pt_start(void);
 
-#endif /* MAIN_WLAB_H_ */
+#endif /* MAIN_WLAB_PT_H_ */
 
 /*  --------------------------------------------------------------------------
  *  end of file

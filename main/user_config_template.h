@@ -16,8 +16,8 @@
 #ifndef MAIN_USER_CONFIG_H_
 #define MAIN_USER_CONFIG_H_
 
-#define CONFIG_WIFI_SSID							("ssid")
-#define CONFIG_WIFI_PASS							("password")
+#define CONFIG_WIFI_SSID					("BALMONT_2.99230")
+#define CONFIG_WIFI_PASS					("UUUJHPUU")
 
 #define CONFIG_MQTT_BROKER						("mqtt://iot.eclipse.org")
 #define CONFIG_MQTT_BROKER_PORT				(1883)
@@ -31,4 +31,3 @@
 /*  --------------------------------------------------------------------------
  *  end of file
  *  ------------------------------------------------------------------------ */
-

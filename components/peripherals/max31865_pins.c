@@ -22,7 +22,7 @@ void max31865_pins_init(void) {
 
     io_conf.mode = GPIO_MODE_INPUT;
     io_conf.pin_bit_mask = 1ULL<<MAX_MISO_PIN;
-    io_conf.pull_up_en = 1;
+    io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
 }
 
@@ -45,7 +45,6 @@ int32_t max31865_pins_miso_read(void) {
 /*  --------------------------------------------------------------------------
  *  end of file
  *  ------------------------------------------------------------------------ */
-
 
 
 

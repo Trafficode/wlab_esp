@@ -14,49 +14,23 @@
 #include "max31865_pins.h"
 #include "max31865.h"
 #include "config.h"
-#include "user_config.h"
+#include "../user_config.h"
 #include "mqtt_client.h"
-#include "network.h"
+#include "../network.h"
 #include "leds.h"
-
-#include "wlab.h"
+#include "wlab_common.h"
 
 #define WLAB_TEMP_SERIE		(1)
-
-#define WLAB_SAMPLE_BUFFER_SIZE \
-					(8+((60*CONFIG_WLAB_PUB_PERIOD)/CONFIG_WLAB_MEASURE_PERIOD))
-
-/* Sometimes max return weird value not fitted to the other if this value
- * will be more than WLAB_EXT2AVG_MAX then skip */
-#define WLAB_EXT2AVG_MAX				(24)
-#define WLAB_MIN_SAMPLES_COUNT	(24)
-
-typedef struct {
-	int32_t buff;
-	int32_t cnt;
-	int32_t min;
-	int32_t max;
-	uint32_t max_ts;
-	uint32_t min_ts;
-	uint32_t sample_ts;
-	int32_t sample_ts_val;
-
-	int16_t sample_buff[WLAB_SAMPLE_BUFFER_SIZE];
-	uint32_t sample_buff_ts[WLAB_SAMPLE_BUFFER_SIZE];
-} buffer_t;
 
 extern logger_t mlog;
 extern char MAC_ADDR_STR[13];
 
 static void wlab_task(void *arg);
-static void wlab_itostrf(char *dest, int32_t signed_int);
 static int wlab_authorize(void);
 static int wlab_publish_sample(buffer_t *buffer);
-static bool wlab_buffer_check(buffer_t *buffer);
 
 static logger_t wlog;
 static max31865_t sens;
-
 
 const char *auth_template =	\
 		"{\"timezone\":\"%s\",\"longitude\":%s,\"latitude\":%s,\"serie\":" \
@@ -67,18 +41,6 @@ const char *data_template = \
 		"{\"UID\":\"%s\",\"TS\":%d,\"SERIE\":{\"Temperature\":" \
 		"{\"f_avg\":%s,\"f_act\":%s,\"f_min\":%s,\"f_max\":%s," \
 		"\"i_min_ts\":%u,\"i_max_ts\":%u}}}";
-
-
-static void wlab_buffer_init(buffer_t *buffer) {
-	buffer->buff = 0;
-	buffer->cnt = 0;
-	buffer->max = INT32_MIN;
-	buffer->min = INT32_MAX;
-	buffer->max_ts = 0;
-	buffer->min_ts = 0;
-	buffer->sample_ts_val = INT32_MAX;
-	buffer->sample_ts = 0;
-}
 
 static bool wlab_buffer_check(buffer_t *buffer) {
 	bool rc=false;
@@ -133,30 +95,6 @@ static bool wlab_buffer_check(buffer_t *buffer) {
 	}
 
 	return(rc);
-}
-
-static void wlab_buffer_commit(buffer_t *buffer, int32_t val, uint32_t ts) {
-	if(WLAB_SAMPLE_BUFFER_SIZE > buffer->cnt) {
-		buffer->sample_buff[buffer->cnt] = (int16_t)val;
-		buffer->sample_buff_ts[buffer->cnt] = ts;
-	} else {
-		logger_error(&wlog, "%s, sample buffer idx exceed\n", __FUNCTION__);
-	}
-
-	if(INT32_MAX == buffer->sample_ts_val) {
-		buffer->sample_ts = ts - (ts % (60*CONFIG_WLAB_PUB_PERIOD));
-		buffer->sample_ts_val = val;
-	}
-	if(val > buffer->max) {
-		buffer->max = val;
-		buffer->max_ts = ts - (ts % 60);
-	}
-	if(val < buffer->min) {
-		buffer->min = val;
-		buffer->min_ts = ts - (ts % 60);
-	}
-	buffer->buff += val;
-	buffer->cnt++;
 }
 
 static void wlab_task(void *arg) {
@@ -230,14 +168,6 @@ void wlab_start(void) {
 	xTaskCreate(wlab_task, "wlab_task", 2048, NULL, 10, NULL);
 }
 
-static void wlab_itostrf(char *dest, int32_t signed_int) {
-	if( 0 > signed_int ) {
-		signed_int = -signed_int;
-		sprintf(dest, "-%d.%d", signed_int/10, abs(signed_int%10));
-	} else {
-		sprintf(dest, "%d.%d", signed_int/10, abs(signed_int%10));
-	}
-}
 
 static int wlab_publish_sample(buffer_t *buffer) {
 	int rc=0;
