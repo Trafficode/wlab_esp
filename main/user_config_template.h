@@ -16,6 +16,8 @@
 #ifndef MAIN_USER_CONFIG_H_
 #define MAIN_USER_CONFIG_H_
 
+#define CONFIG_VERSION						("wlab_esp_1.0")
+
 #define CONFIG_WIFI_SSID					("BALMONT_2.99230")
 #define CONFIG_WIFI_PASS					("UUUJHPUU")
 
