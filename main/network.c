@@ -152,25 +152,24 @@ int mqtt_printf(const char *topic, uint32_t timeout,  const char *fmt, ...) {
 
 	xSemaphoreTake( mqtt_lock, UINT32_MAX );
 
-	rc = vsnprintf(mqtt_pub_buffer,
-								 CONFIG_MQTT_MAX_PUBLISH_LEN,
-								 fmt, args);
+	int32_t len = vsnprintf(mqtt_pub_buffer, CONFIG_MQTT_MAX_PUBLISH_LEN,
+								 	 	 	 	 	 fmt, args);
 
-	if( 0 < rc && CONFIG_MQTT_MAX_PUBLISH_LEN > rc ) {
+	if( 0 < len && CONFIG_MQTT_MAX_PUBLISH_LEN > len ) {
 		xEventGroupClearBits(net_event_group, MQTT_PUBLISHED_BIT);
 		last_publish_id = esp_mqtt_client_publish(mqttc,
-													topic, mqtt_pub_buffer, rc, 1, 0);
+													topic, mqtt_pub_buffer, len, 1, 0);
 		if(-1 != last_publish_id) {
 			rc = xEventGroupWaitBits(net_event_group, MQTT_PUBLISHED_BIT, false,
 																				true, timeout);
 
 			if(rc & MQTT_PUBLISHED_BIT) {
-				logger_info(&netlog, "%s, publish msg_id=%d success\n", __FUNCTION__,
-											last_publish_id);
+				logger_info(&netlog, "%s, publish msg_id=%d len=%d success\n",
+											__FUNCTION__, last_publish_id, len);
 				rc = 0;		// Return success
 			} else {
-				logger_error(&netlog, "%s, publish msg_id=%d failed\n", __FUNCTION__,
-											last_publish_id);
+				logger_error(&netlog, "%s, publish msg_id=%d len=%d failed\n",
+											__FUNCTION__, last_publish_id, len);
 				rc = -2;	// ACK Timeout
 			}
 			xEventGroupClearBits(net_event_group, MQTT_PUBLISHED_BIT);

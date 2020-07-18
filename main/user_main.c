@@ -32,6 +32,7 @@
 #include "user_config.h"
 #include "wlab_dht.h"
 #include "network.h"
+#include "terminal.h"
 #include "wlab/wlab_pt.h"
 
 
@@ -85,6 +86,7 @@ void app_main(void) {
 	logger_cri(&mlog, "MAC_ADDR: %s\n", MAC_ADDR_STR);
 
 	leds_init();
+	terminal_init();
 
 #if CONFIG_SENSOR_PT == 1
 	wlab_pt_init();

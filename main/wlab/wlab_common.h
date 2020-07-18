@@ -15,7 +15,7 @@
 /* Sometimes max return weird value not fitted to the other if this value
  * will be more than WLAB_EXT2AVG_MAX then skip */
 #define WLAB_EXT2AVG_MAX					(32)
-#define WLAB_MIN_SAMPLES_COUNT		(24)
+#define WLAB_MIN_SAMPLES_COUNT		(16)
 
 #define WLAB_SAMPLE_BUFFER_SIZE \
 					(8+((60*CONFIG_WLAB_PUB_PERIOD)/CONFIG_WLAB_MEASURE_PERIOD))
@@ -37,7 +37,8 @@ typedef struct {
 void wlab_itostrf(char *dest, int32_t signed_int);
 
 void wlab_buffer_init(buffer_t *buffer);
-bool wlab_buffer_commit(buffer_t *buffer, int32_t val, uint32_t ts);
+bool wlab_buffer_commit(buffer_t *buffer, int32_t val, uint32_t ts,
+												uint32_t threshold);
 bool wlab_buffer_check(buffer_t *buffer);
 
 #endif /* WLAB_COMMON_H_ */

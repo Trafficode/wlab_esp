@@ -49,7 +49,7 @@ static dht_t dht21;
 static buffer_t temp_buffer, rh_buffer;
 
 void wlab_dht_init(void) {
-	dhtlog.init.level = loggerLevelDebug;
+	dhtlog.init.level = loggerLevelInfo;
 	dhtlog.init.name = "wlabdht";
 	logger_init(&dhtlog, &mlog);
 
@@ -89,6 +89,10 @@ static void wlab_dht_task(void *arg) {
 
 		if(!dht_read(&dht21, &temp, &rh)) {
 			logger_info(&dhtlog, "%s, temp:%d rh:%d\n", __FUNCTION__, temp, rh);
+			if(500 < temp || 1000 < rh) {
+				logger_error(&dhtlog, "%s, Failed to validate data.\n", __FUNCTION__);
+				continue;
+			}
 		} else {
 			logger_error(&dhtlog, "%s, DHT21 failed.\n", __FUNCTION__);
 			continue;
@@ -106,8 +110,10 @@ static void wlab_dht_task(void *arg) {
 													rh_buffer.min, rh_buffer.max, rh_avg);
 
 			logger_cri(&dhtlog, "Sample ready to send ...\n");
-			if(!wlab_dht_publish_sample(&temp_buffer, &rh_buffer)) {
-				logger_error(&dhtlog, "%s, publish sample failed\n", __FUNCTION__);
+			int rc = wlab_dht_publish_sample(&temp_buffer, &rh_buffer);
+			if(0 != rc) {
+				logger_error(&dhtlog, "%s, publish sample failed rc:%d\n",
+							__FUNCTION__, rc);
 				led_set_state(LED_MQTT, LED_TOOGLE_SLOW);
 			} else {
 				logger_info(&dhtlog, "%s, publish sample success\n", __FUNCTION__);
@@ -117,8 +123,8 @@ static void wlab_dht_task(void *arg) {
 			wlab_buffer_init(&rh_buffer);
 			last_minutes = timeinfo.tm_min;
 		} else {
-			wlab_buffer_commit(&temp_buffer, temp, now);
-			wlab_buffer_commit(&rh_buffer, rh, now);
+			wlab_buffer_commit(&temp_buffer, temp, now, 8);
+			wlab_buffer_commit(&rh_buffer, rh, now, 40);
 		}
 	}
 }
@@ -143,7 +149,7 @@ static int wlab_dht_publish_sample(buffer_t *temp, buffer_t *rh) {
 
 	rc = mqtt_printf(
 			CONFIG_WLAB_PUB_TOPIC,
-			4000,
+			6000,
 			data_template,
 			MAC_ADDR_STR,
 			temp->sample_ts,

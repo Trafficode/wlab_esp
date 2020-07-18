@@ -90,7 +90,27 @@ void wlab_buffer_init(buffer_t *buffer) {
 	buffer->sample_ts = 0;
 }
 
-bool wlab_buffer_commit(buffer_t *buffer, int32_t val, uint32_t ts) {
+/* wlab_buffer_commit
+ * :param threshold
+ * when that value exceed average then skip sample
+ * when first sample will bad, then no next sample will be added so finally
+ * sample count wont be enought
+ */
+bool wlab_buffer_commit(buffer_t *buffer, int32_t val, uint32_t ts,
+												uint32_t threshold)
+{
+	if((buffer->max != INT32_MIN) && ((val-threshold)>buffer->max)) {
+		logger_error(&mlog, "%s, Value %d max exceed threshold\n", val,
+												__FUNCTION__);
+		return(false);
+	}
+
+	if((buffer->min != INT32_MAX) && ((val+threshold)<buffer->min)) {
+		logger_error(&mlog, "%s, Value %d min exceed threshold\n", val,
+												__FUNCTION__);
+		return(false);
+	}
+
 	if(WLAB_SAMPLE_BUFFER_SIZE > buffer->cnt) {
 		buffer->sample_buff[buffer->cnt] = (int16_t)val;
 		buffer->sample_buff_ts[buffer->cnt] = ts;

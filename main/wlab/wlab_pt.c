@@ -91,7 +91,7 @@ static void wlab_pt_task(void *arg) {
 			wlab_buffer_init(&temp_buffer);
 			last_minutes = timeinfo.tm_min;
 		} else {
-			wlab_buffer_commit(&temp_buffer, temp, now);
+			wlab_buffer_commit(&temp_buffer, temp, now, 4);
 		}
 	}
 }
