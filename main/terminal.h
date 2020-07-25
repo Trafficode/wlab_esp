@@ -8,7 +8,10 @@
 #ifndef MAIN_TERMINAL_H_
 #define MAIN_TERMINAL_H_
 
-void terminal_init(void);
+#include "cmdline.h"
+
+extern uint32_t _cmds_num;
+extern cmd_t _cmd[];
 
 #endif /* MAIN_TERMINAL_H_ */
 

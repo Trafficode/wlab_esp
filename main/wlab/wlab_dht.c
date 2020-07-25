@@ -65,7 +65,7 @@ void wlab_dht_init(void) {
 }
 
 void wlab_dht_start(void) {
-	xTaskCreate(wlab_dht_task, "wlabdht_task", 2048, NULL, 10, NULL);
+	xTaskCreate(wlab_dht_task, "wlabdht_task", 2*1024, NULL, 10, NULL);
 }
 
 static void wlab_dht_task(void *arg) {
@@ -103,11 +103,11 @@ static void wlab_dht_task(void *arg) {
 		{
 			int32_t temp_avg = temp_buffer.buff/temp_buffer.cnt;
 			logger_info(&dhtlog, "temp - min: %d max: %d avg: %d\n",
-													temp_buffer.min, temp_buffer.max, temp_avg);
+													temp_buffer._min, temp_buffer._max, temp_avg);
 
 			int32_t rh_avg = rh_buffer.buff/rh_buffer.cnt;
 			logger_info(&dhtlog, "rh - min: %d max: %d avg: %d\n",
-													rh_buffer.min, rh_buffer.max, rh_avg);
+													rh_buffer._min, rh_buffer._max, rh_avg);
 
 			logger_cri(&dhtlog, "Sample ready to send ...\n");
 			int rc = wlab_dht_publish_sample(&temp_buffer, &rh_buffer);
@@ -138,14 +138,14 @@ static int wlab_dht_publish_sample(buffer_t *temp, buffer_t *rh) {
 	temp_avg = temp->buff/temp->cnt;
 	wlab_itostrf(tavg_str, temp_avg);
 	wlab_itostrf(tact_str, temp->sample_ts_val);
-	wlab_itostrf(tmin_str, temp->min);
-	wlab_itostrf(tmax_str, temp->max);
+	wlab_itostrf(tmin_str, temp->_min);
+	wlab_itostrf(tmax_str, temp->_max);
 
 	rh_avg = rh->buff/rh->cnt;
 	wlab_itostrf(rhavg_str, rh_avg);
 	wlab_itostrf(rhact_str, rh->sample_ts_val);
-	wlab_itostrf(rhmin_str, rh->min);
-	wlab_itostrf(rhmax_str, rh->max);
+	wlab_itostrf(rhmin_str, rh->_min);
+	wlab_itostrf(rhmax_str, rh->_max);
 
 	rc = mqtt_printf(
 			CONFIG_WLAB_PUB_TOPIC,
@@ -157,14 +157,14 @@ static int wlab_dht_publish_sample(buffer_t *temp, buffer_t *rh) {
 			tact_str,
 			tmin_str,
 			tmax_str,
-			temp->min_ts,
-			temp->max_ts,
+			temp->_min_ts,
+			temp->_max_ts,
 			rhavg_str,
 			rhact_str,
 			rhmin_str,
 			rhmax_str,
-			rh->min_ts,
-			rh->max_ts
+			rh->_min_ts,
+			rh->_max_ts
 	);
 	return(rc);
 }

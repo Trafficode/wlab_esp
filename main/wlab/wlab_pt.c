@@ -74,7 +74,7 @@ static void wlab_pt_task(void *arg) {
 		{
 			int32_t temp_avg = temp_buffer.buff/temp_buffer.cnt;
 			logger_info(&wlog, "Min: %d Max: %d Avg: %d\n",
-													temp_buffer.min, temp_buffer.max, temp_avg);
+													temp_buffer._min, temp_buffer._max, temp_avg);
 
 			if(wlab_buffer_check(&temp_buffer)) {
 				logger_cri(&wlog, "Sample ready to send ...\n");
@@ -113,7 +113,7 @@ void wlab_pt_init(void) {
 }
 
 void wlab_pt_start(void) {
-	xTaskCreate(wlab_pt_task, "wlab_task", 2048, NULL, 10, NULL);
+	xTaskCreate(wlab_pt_task, "wlab_task", 2*1024, NULL, 10, NULL);
 }
 
 
@@ -126,8 +126,8 @@ static int wlab_pt_publish_sample(buffer_t *buffer) {
 
 	wlab_itostrf(tavg_str, temp_avg);
 	wlab_itostrf(tact_str, buffer->sample_ts_val);
-	wlab_itostrf(tmin_str, buffer->min);
-	wlab_itostrf(tmax_str, buffer->max);
+	wlab_itostrf(tmin_str, buffer->_min);
+	wlab_itostrf(tmax_str, buffer->_max);
 
 	rc = mqtt_printf(
 			CONFIG_WLAB_PUB_TOPIC,
@@ -139,8 +139,8 @@ static int wlab_pt_publish_sample(buffer_t *buffer) {
 			tact_str,
 			tmin_str,
 			tmax_str,
-			buffer->min_ts,
-			buffer->max_ts
+			buffer->_min_ts,
+			buffer->_max_ts
 	);
 	return(rc);
 }

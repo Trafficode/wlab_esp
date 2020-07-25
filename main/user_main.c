@@ -33,8 +33,8 @@
 #include "wlab_dht.h"
 #include "network.h"
 #include "terminal.h"
+#include "cmdline.h"
 #include "wlab/wlab_pt.h"
-
 
 static void main_task(void *arg);
 
@@ -42,24 +42,30 @@ uint8_t MAC_ADDR[6];
 char MAC_ADDR_STR[13];
 logger_t mlog;
 
-#define CONFIG_PRINT_BUFF_SIZE				(256)
+#define CONFIG_PRINT_BUFF_SIZE					(256)
+#define CONFIG_TERM_ANS_BUFF_SIZE 			(256)
+#define CONFIG_TERM_RCV_BUFF_SIZE 			(256)
+
 static uint8_t print_buffer[CONFIG_PRINT_BUFF_SIZE];
+static cmdline_t uterm;
+static uint8_t _ans_buff[CONFIG_TERM_ANS_BUFF_SIZE];
+static uint8_t _rcv_buff[CONFIG_TERM_RCV_BUFF_SIZE];
 
 static void main_task(void *arg) {
 // SNTP sync period can be set in sntp_opts.h file
 // #define SNTP_UPDATE_DELAY					(20000) // milliseconds
 	sntp_wait();
 
-#if CONFIG_SENSOR_PT == 1
+#if CONFIG_SENSOR_PT
 	wlab_pt_start();
-#elif CONFIG_SENSOR_DHT21 == 1
+#elif CONFIG_SENSOR_DHT21
 	wlab_dht_start();
 #else
 	;
 #endif
 
 	for(;;) {
-		vTaskDelay(1000);
+		cmdline_commit(&uterm);
 	}
 }
 
@@ -86,11 +92,23 @@ void app_main(void) {
 	logger_cri(&mlog, "MAC_ADDR: %s\n", MAC_ADDR_STR);
 
 	leds_init();
-	terminal_init();
 
-#if CONFIG_SENSOR_PT == 1
+	uterm.init.name = "uterm";
+	uterm.init.getch = uart_debug_getc;
+	uterm.init.putd = uart_debug_send;
+	uterm.init.use_prompt = true;
+	uterm.init.use_echo = true;
+	uterm.init.cmds = _cmd;
+	uterm.init.cmds_num = _cmds_num;
+	uterm.init.ans_buff = _ans_buff;
+	uterm.init.ans_buff_size = CONFIG_TERM_ANS_BUFF_SIZE;
+	uterm.init.rcv_buff = _rcv_buff;
+	uterm.init.rcv_buff_size = CONFIG_TERM_RCV_BUFF_SIZE;
+	cmdline_init(&uterm);
+
+#if CONFIG_SENSOR_PT
 	wlab_pt_init();
-#elif CONFIG_SENSOR_DHT21 == 1
+#elif CONFIG_SENSOR_DHT21
 	wlab_dht_init();
 #else
 	;
@@ -99,7 +117,7 @@ void app_main(void) {
 	wifi_init();	// function blocking until connection
 	mqtt_init();	// function blocking until connection
 
-	xTaskCreate(main_task, "main_task", 2*1024, NULL, 10, NULL);
+	xTaskCreate(main_task, "main_task", 4*1024, NULL, 10, NULL);
 }
 
 /*  --------------------------------------------------------------------------
