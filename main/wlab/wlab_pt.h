@@ -9,6 +9,7 @@
 
 void wlab_pt_init(void);
 void wlab_pt_start(void);
+int wlab_pt_push(void);
 
 #endif /* MAIN_WLAB_PT_H_ */
 

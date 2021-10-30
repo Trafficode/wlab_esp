@@ -37,7 +37,9 @@ typedef struct {
 		void (*data_pin_mode_output)(void);
 		int32_t (*data_pin_get)(void);
 		void (*data_pin_set)(int32_t level);
+		void (*power_pin_set)(int32_t level);
 	} init;
+	uint32_t failed_counter;
 } dht_t;
 
 int32_t dht_init(dht_t *self);

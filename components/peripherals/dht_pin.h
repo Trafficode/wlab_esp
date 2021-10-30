@@ -8,12 +8,11 @@
 
 #include "driver/gpio.h"
 
-#define DHT_GPIO_PIN		(4)				// D2
-
 void dht_gpio_pin_init(void);
 void dht_gpio_pin_set(int32_t level);
 void dht_gpio_pin_mode_input(void);
 void dht_gpio_pin_mode_output(void);
+void dht_gpio_pin_power_set(int32_t level);
 
 int32_t dht_gpio_pin_get(void);
 

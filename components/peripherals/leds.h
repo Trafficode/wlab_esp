@@ -13,7 +13,8 @@
 #define LED_OFF						(0xFFFF)
 
 typedef enum {
-	LED_MQTT = 2
+	LED_MQTT = 2,
+	LED2_MQTT = 5
 } led_t;
 
 void leds_init(void);

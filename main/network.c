@@ -61,6 +61,8 @@ void wifi_init(void) {
 	netlog.init.name = "netlog";
   logger_init(&netlog, &mlog);
 
+  led_set_state(LED_MQTT, LED_TOOGLE_SLOW);
+
 	tcpip_adapter_init();
 	net_event_group = xEventGroupCreate();
 	ESP_ERROR_CHECK(esp_event_loop_init(wifi_event_handler, NULL));
@@ -105,6 +107,7 @@ void mqtt_init(void) {
   if( NULL == mqtt_lock ) {
   	for(;;);
   }
+  led_set_state(LED_MQTT, LED_TOOGLE_FAST);
 
   mqttc = esp_mqtt_client_init(&mqtt_cfg);
 	logger_info(&netlog, "%s, connect to %s:%d...\n", __FUNCTION__,
@@ -228,11 +231,13 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event) {
 	switch (event->event_id) {
 		case MQTT_EVENT_CONNECTED: {
 			logger_info(&netlog, "%s, MQTT_EVENT_CONNECTED\n", __FUNCTION__);
+			led_set_state(LED_MQTT, LED_OFF);
 			xEventGroupSetBits(net_event_group, MQTT_CONNECTED_BIT);
 			break;
 		}
 		case MQTT_EVENT_DISCONNECTED: {
 			logger_info(&netlog, "%s, MQTT_EVENT_DISCONNECTED\n", __FUNCTION__);
+			led_set_state(LED_MQTT, LED_TOOGLE_FAST);
 			xEventGroupClearBits(net_event_group, MQTT_CONNECTED_BIT);
 			break;
 		}

@@ -86,11 +86,17 @@ void app_main(void) {
 	mlog.init.name = "main";
 	logger_init(&mlog, NULL);
 
-	esp_efuse_mac_get_default(MAC_ADDR);
-	sprintf(MAC_ADDR_STR, "%02X%02X%02X%02X%02X%02X", MAC_ADDR[5],
-			MAC_ADDR[4], MAC_ADDR[3], MAC_ADDR[2], MAC_ADDR[1], MAC_ADDR[0]);
-	logger_cri(&mlog, "MAC_ADDR: %s\n", MAC_ADDR_STR);
+	if(0 == strlen(CONFIG_CUSTOM_MAC)) {
+		esp_efuse_mac_get_default(MAC_ADDR);
+		sprintf(MAC_ADDR_STR, "%02X%02X%02X%02X%02X%02X", MAC_ADDR[5],
+				MAC_ADDR[4], MAC_ADDR[3], MAC_ADDR[2], MAC_ADDR[1], MAC_ADDR[0]);
+		logger_cri(&mlog, "MAC_ADDR default\n");
+	} else {
+		strcpy(MAC_ADDR_STR, CONFIG_CUSTOM_MAC);
+		logger_cri(&mlog, "MAC_ADDR custom\n");
+	}
 
+	logger_cri(&mlog, "MAC_ADDR: %s\n", MAC_ADDR_STR);
 	leds_init();
 
 	uterm.init.name = "uterm";

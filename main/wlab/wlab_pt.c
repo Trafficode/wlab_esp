@@ -20,6 +20,7 @@
 
 #include "leds.h"
 #include "wlab_common.h"
+#include "wlab_pt.h"
 
 #define WLAB_TEMP_SERIE		(1)
 
@@ -43,12 +44,12 @@ const char *data_template = \
 		"{\"f_avg\":%s,\"f_act\":%s,\"f_min\":%s,\"f_max\":%s," \
 		"\"i_min_ts\":%u,\"i_max_ts\":%u}}}";
 
+static buffer_t temp_buffer;
 
 static void wlab_pt_task(void *arg) {
 	time_t now=0;
 	struct tm timeinfo;
 	uint32_t last_minutes=0;
-	buffer_t temp_buffer;
 	int32_t temp=0;
 
 	wlab_buffer_init(&temp_buffer);
@@ -116,6 +117,30 @@ void wlab_pt_start(void) {
 	xTaskCreate(wlab_pt_task, "wlab_task", 2*1024, NULL, 10, NULL);
 }
 
+int wlab_pt_push(void) {
+	int32_t temp_avg=0;
+	int rc=0;
+	time_t now, tmp;
+	time(&now);
+	if(0 == temp_buffer.cnt) {
+		logger_error(&wlog, "buffer.cnt = 0, wait a bit...\n");
+	} else {
+		tmp = temp_buffer.sample_ts;
+		temp_buffer.sample_ts = now;
+		temp_avg = temp_buffer.buff/temp_buffer.cnt;
+		logger_info(&wlog,
+			"temp - min: %d max: %d avg: %d, cnt: %d\n",
+			temp_buffer._min,
+			temp_buffer._max,
+			temp_avg,
+			temp_buffer.cnt
+		);
+		rc = wlab_pt_publish_sample(&temp_buffer);
+		temp_buffer.sample_ts = tmp;
+	}
+
+	return(rc);
+}
 
 static int wlab_pt_publish_sample(buffer_t *buffer) {
 	int rc=0;

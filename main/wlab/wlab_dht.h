@@ -9,6 +9,7 @@
 
 void wlab_dht_init(void);
 void wlab_dht_start(void);
+int wlab_dht_push(void);
 
 #endif /* MAIN_WLAB_DHT_H_ */
 /*  --------------------------------------------------------------------------

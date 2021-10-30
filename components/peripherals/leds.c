@@ -29,9 +29,12 @@ void leds_init(void) {
 
     io_conf.intr_type = GPIO_INTR_DISABLE;
     io_conf.mode = GPIO_MODE_OUTPUT;
-    io_conf.pin_bit_mask = 1ULL<<LED_MQTT;
+    io_conf.pin_bit_mask = 1<<LED_MQTT;
     io_conf.pull_down_en = 0;
     io_conf.pull_up_en = 0;
+    gpio_config(&io_conf);
+
+    io_conf.pin_bit_mask = 1<<LED2_MQTT;
     gpio_config(&io_conf);
 
     xTaskCreate(leds_task, "leds_task", 1024, NULL, 10, NULL);
@@ -48,16 +51,18 @@ void led_set_state(led_t led, uint16_t state) {
 static void leds_task(void *arg) {
 	uint32_t leds_status_idx=0;
 	logger_cri(&ledlog, "leds task started\n");
-    for(;;) {
-    	for(leds_status_idx=0; leds_status_idx<16; leds_status_idx++) {
-    		if((1<<leds_status_idx) & mqtt_led_state) {
-    			gpio_set_level(LED_MQTT, 1);
-    		} else {
-    			gpio_set_level(LED_MQTT, 0);
-    		}
-    		vTaskDelay(125);
-    	}
-    }
+	for(;;) {
+		for(leds_status_idx=0; leds_status_idx<16; leds_status_idx++) {
+			if((1<<leds_status_idx) & mqtt_led_state) {
+				gpio_set_level(LED_MQTT, 1);
+				gpio_set_level(LED2_MQTT, 1);
+			} else {
+				gpio_set_level(LED_MQTT, 0);
+				gpio_set_level(LED2_MQTT, 0);
+			}
+			vTaskDelay(125);
+		}
+	}
 }
 
 /*  --------------------------------------------------------------------------

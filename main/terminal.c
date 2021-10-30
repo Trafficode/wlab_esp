@@ -13,13 +13,17 @@
 #include "uart_debug.h"
 #include "user_config.h"
 #include "wlab_common.h"
+#include "wlab_dht.h"
+#include "wlab_pt.h"
 #include "terminal.h"
 
 static void cmd_help(void *self, uint8_t *param);
+static void cmd_push(void *self, uint8_t *param);
 static void cmd_test(void *self, uint8_t *param);
 
 cmd_t _cmd[] = {
 		{"HELP", cmd_help, "User commands <help>"},
+		{"PUSH", cmd_push, "Send sensor data to server <push>"},
 		{"TEST", cmd_test, "Wlab buffer test <test>"}
 };
 uint32_t _cmds_num = sizeof(_cmd)/sizeof(_cmd[0]);
@@ -35,8 +39,21 @@ static void cmd_help(void *self, uint8_t *param) {
 	}
 }
 
+static void cmd_push(void *self, uint8_t *param) {
+	int rc = -1;
+#if CONFIG_SENSOR_PT
+	rc = wlab_pt_push();
+#elif CONFIG_SENSOR_DHT21
+	rc = wlab_dht_push();
+#else
+	;
+#endif
+	cmdline_answer(self, "\nrc = %d\n", rc);
+}
+
+
 static void cmd_test(void *self, uint8_t *param) {
-	int32_t idx=0, samples[8] = {40, 10, 20, 50, 44, 41, 42, 1};
+	int32_t idx = 0, samples[8] = {40, 10, 20, 50, 44, 41, 42, 1};
 	buffer_t buff;
 
 	cmdline_answer(self, "Test wlab buffer_size=%d\n", sizeof(buff));

@@ -59,6 +59,7 @@ void wlab_dht_init(void) {
 	dht21.init.data_pin_mode_input = dht_gpio_pin_mode_input;
 	dht21.init.data_pin_mode_output = dht_gpio_pin_mode_output;
 	dht21.init.data_pin_set = dht_gpio_pin_set;
+	dht21.init.power_pin_set = dht_gpio_pin_power_set;
 	dht21.init.log = &dhtlog;
 	dht21.init.type = TYPE_DHT21;
 	dht_init(&dht21);
@@ -66,6 +67,31 @@ void wlab_dht_init(void) {
 
 void wlab_dht_start(void) {
 	xTaskCreate(wlab_dht_task, "wlabdht_task", 2*1024, NULL, 10, NULL);
+}
+
+int wlab_dht_push(void) {
+	int32_t temp_avg=0, rh_avg=0;
+	int rc=0;
+	time_t now, tmp;
+
+	time(&now);
+	if(0 == temp_buffer.cnt) {
+		logger_error(&dhtlog, "buffer.cnt = 0, wait a bit...\n");
+	} else {
+		tmp = temp_buffer.sample_ts;
+		temp_buffer.sample_ts = now;
+		logger_info(&dhtlog, "buffer.cnt = %d\n", temp_buffer.cnt);
+		temp_avg = temp_buffer.buff/temp_buffer.cnt;
+		logger_cri(&dhtlog, "temp - min: %d max: %d avg: %d\n",
+												temp_buffer._min, temp_buffer._max, temp_avg);
+
+		rh_avg = rh_buffer.buff/rh_buffer.cnt;
+		logger_cri(&dhtlog, "rh - min: %d max: %d avg: %d\n",
+												rh_buffer._min, rh_buffer._max, rh_avg);
+		rc = wlab_dht_publish_sample(&temp_buffer, &rh_buffer);
+		temp_buffer.sample_ts = tmp;
+	}
+	return(rc);
 }
 
 static void wlab_dht_task(void *arg) {
@@ -137,6 +163,7 @@ static int wlab_dht_publish_sample(buffer_t *temp, buffer_t *rh) {
 
 	temp_avg = temp->buff/temp->cnt;
 	wlab_itostrf(tavg_str, temp_avg);
+	logger_info(&dhtlog, "%s, %d [%s]\n", __FUNCTION__, temp_avg, tavg_str);
 	wlab_itostrf(tact_str, temp->sample_ts_val);
 	wlab_itostrf(tmin_str, temp->_min);
 	wlab_itostrf(tmax_str, temp->_max);
