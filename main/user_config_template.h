@@ -13,7 +13,8 @@
  * Build binary and program
  */
 
-#define CONFIG_VERSION			("wlab_esp_1.0")
+
+#define CONFIG_VERSION			("wlab_esp_1.1")
 
 #define CONFIG_SENSOR_DHT21		(1)
 #define CONFIG_SENSOR_PT		(0)
