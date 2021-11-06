@@ -22,7 +22,6 @@
 #include "esp_log.h"
 #include "driver/uart.h"
 #include "driver/gpio.h"
-#include "mqtt_client.h"
 #include "lwip/apps/sntp.h"
 
 #include "logger.h"

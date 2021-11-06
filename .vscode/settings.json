@@ -1,0 +1,12 @@
+{
+    "editor.rulers": [ 80 ],
+    "files.exclude": {
+        "**/*.o": true
+    },
+    "editor.fontWeight": "100",
+    "editor.fontSize": 12,
+    "files.associations": {
+        "mqtt_client.h": "c",
+        "sntp.h": "c"
+    }
+}
