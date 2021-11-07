@@ -15,17 +15,23 @@
 #include "wlab_common.h"
 #include "wlab_dht.h"
 #include "wlab_pt.h"
+#include "dht.h"
 #include "terminal.h"
+
+static void cmd_test(void *self, uint8_t *param);
 
 static void cmd_help(void *self, uint8_t *param);
 static void cmd_push(void *self, uint8_t *param);
-static void cmd_test(void *self, uint8_t *param);
+static void cmd_dhtr(void *self, uint8_t *param);
 
 cmd_t _cmd[] = {
 		{"HELP", cmd_help, "User commands <help>"},
+		{"DHTR", cmd_dhtr, "Wlab buffer test <test>"},
+
 		{"PUSH", cmd_push, "Send sensor data to server <push>"},
-		{"TEST", cmd_test, "Wlab buffer test <test>"}
+		{"TEST", cmd_test, "Read dht data <dhtr>"}		
 };
+
 uint32_t _cmds_num = sizeof(_cmd)/sizeof(_cmd[0]);
 //extern logger_t mlog;
 
@@ -53,21 +59,19 @@ static void cmd_push(void *self, uint8_t *param) {
 
 
 static void cmd_test(void *self, uint8_t *param) {
-	int32_t idx = 0, samples[8] = {40, 10, 20, 50, 44, 41, 42, 1};
-	buffer_t buff;
+	cmdline_answer(self, "TICK ");
+	vTaskDelay(10000);
+	cmdline_answer(self, "TACK\n", configMAX_PRIORITIES );
+}
 
-	cmdline_answer(self, "Test wlab buffer_size=%d\n", sizeof(buff));
-	cmdline_answer(self, "WLAB_SAMPLE_BUFFER_SIZE: %d\n",
-												WLAB_SAMPLE_BUFFER_SIZE);
-	wlab_buffer_init(&buff);
+dht_t dht21;
 
-	for(idx=0; idx<8; idx++) {
-		if(wlab_buffer_commit(&buff, samples[idx], 100+idx, 8)) {
-			cmdline_answer(self, " Sample %d append success\n", idx);
-		} else {
-			cmdline_answer(self, " Sample %d append failed\n", idx);
-		}
-	}
+static void cmd_dhtr(void *self, uint8_t *param) {
+	int32_t rc=0;
+	int16_t temp=0, rh=0;
+	
+	rc = dht_read(&dht21, &temp, &rh);
+	cmdline_answer(self, "rc %d temp %d rh %d\n", rc, temp, rh);
 }
 
 /*  --------------------------------------------------------------------------

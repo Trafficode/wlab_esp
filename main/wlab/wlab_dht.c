@@ -44,7 +44,7 @@ static int wlab_dht_authorize(void);
 static int wlab_dht_publish_sample(buffer_t *temp, buffer_t *rh);
 
 static logger_t dhtlog;
-static dht_t dht21;
+dht_t dht21;
 
 static buffer_t temp_buffer, rh_buffer;
 
@@ -66,7 +66,9 @@ void wlab_dht_init(void) {
 }
 
 void wlab_dht_start(void) {
-	xTaskCreate(wlab_dht_task, "wlabdht_task", 2*1024, NULL, 10, NULL);
+	xTaskCreate(wlab_dht_task, 
+		"wlabdht", 2*1024, NULL, configMAX_PRIORITIES, NULL
+	);
 }
 
 int wlab_dht_push(void) {
@@ -87,7 +89,8 @@ int wlab_dht_push(void) {
 
 		rh_avg = rh_buffer.buff/rh_buffer.cnt;
 		logger_cri(&dhtlog, "rh - min: %d max: %d avg: %d\n",
-												rh_buffer._min, rh_buffer._max, rh_avg);
+			rh_buffer._min, rh_buffer._max, rh_avg
+		);
 		rc = wlab_dht_publish_sample(&temp_buffer, &rh_buffer);
 		temp_buffer.sample_ts = tmp;
 	}
@@ -95,10 +98,12 @@ int wlab_dht_push(void) {
 }
 
 static void wlab_dht_task(void *arg) {
+	int32_t rc = 0;
 	time_t now=0;
 	struct tm timeinfo;
 	uint32_t last_minutes=0;
 	int16_t temp=0, rh=0;
+	// int32_t temp_avg=0, rh_avg=0;
 
 	wlab_buffer_init(&temp_buffer);
 	wlab_buffer_init(&rh_buffer);
@@ -116,33 +121,35 @@ static void wlab_dht_task(void *arg) {
 		if(!dht_read(&dht21, &temp, &rh)) {
 			logger_info(&dhtlog, "%s, temp:%d rh:%d\n", __FUNCTION__, temp, rh);
 			if(500 < temp || 1000 < rh) {
-				logger_error(&dhtlog, "%s, Failed to validate data.\n", __FUNCTION__);
+				// logger_error(&dhtlog, "%s, Failed to validate data.\n", __FUNCTION__);
 				continue;
 			}
 		} else {
-			logger_error(&dhtlog, "%s, DHT21 failed.\n", __FUNCTION__);
+			// logger_error(&dhtlog, "%s, DHT21 failed.\n", __FUNCTION__);
 			continue;
 		}
 
-		if(0x00 == timeinfo.tm_min % CONFIG_WLAB_PUB_PERIOD
-				&& timeinfo.tm_min != last_minutes)
+		if(	(0x00 == timeinfo.tm_min % CONFIG_WLAB_PUB_PERIOD) && 
+			(timeinfo.tm_min != last_minutes))
 		{
-			int32_t temp_avg = temp_buffer.buff/temp_buffer.cnt;
-			logger_info(&dhtlog, "temp - min: %d max: %d avg: %d\n",
-													temp_buffer._min, temp_buffer._max, temp_avg);
+			// temp_avg = temp_buffer.buff/temp_buffer.cnt;
+			// logger_info(&dhtlog, "temp - min: %d max: %d avg: %d\n",
+			// 	temp_buffer._min, temp_buffer._max, temp_avg
+			// );
 
-			int32_t rh_avg = rh_buffer.buff/rh_buffer.cnt;
-			logger_info(&dhtlog, "rh - min: %d max: %d avg: %d\n",
-													rh_buffer._min, rh_buffer._max, rh_avg);
+			// rh_avg = rh_buffer.buff/rh_buffer.cnt;
+			// logger_info(&dhtlog, "rh - min: %d max: %d avg: %d\n",
+			// 	rh_buffer._min, rh_buffer._max, rh_avg
+			// );
 
-			logger_cri(&dhtlog, "Sample ready to send ...\n");
-			int rc = wlab_dht_publish_sample(&temp_buffer, &rh_buffer);
+			// logger_cri(&dhtlog, "Sample ready to send ...\n");
+			rc = wlab_dht_publish_sample(&temp_buffer, &rh_buffer);
 			if(0 != rc) {
-				logger_error(&dhtlog, "%s, publish sample failed rc:%d\n",
-							__FUNCTION__, rc);
+				// logger_error(&dhtlog, "%s, publish sample failed rc:%d\n",
+				// 			__FUNCTION__, rc);
 				led_set_state(LED_MQTT, LED_TOOGLE_SLOW);
 			} else {
-				logger_info(&dhtlog, "%s, publish sample success\n", __FUNCTION__);
+				// logger_info(&dhtlog, "%s, publish sample success\n", __FUNCTION__);
 			}
 
 			wlab_buffer_init(&temp_buffer);

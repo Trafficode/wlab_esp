@@ -66,7 +66,7 @@ void logger_error(logger_t *self, const char *fmt, ...) {
 		xSemaphoreTake( self->_buff_lock, UINT32_MAX );
 
 		/* Place timestamp, name and debug level */
-		curr_len = logger_place_padding(self, _error, sizeof(_error));
+		curr_len = logger_place_padding(self, _error, sizeof(_error)-1);
 		
 		n = vsnprintf(	(char *)(self->init.buff+curr_len),
 								self->init.buff_size-curr_len,
