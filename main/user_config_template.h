@@ -3,6 +3,8 @@
  *  Created on: 28 wrz 2019
  *  	Author: Trafficode
  *  ------------------------------------------------------------------------ */
+#ifndef USER_CONFIG_H_
+#define USER_CONFIG_H_
 
 /**
  * 1 STEP
@@ -12,7 +14,6 @@
  * 3 STEP
  * Build binary and program
  */
-
 
 #define CONFIG_VERSION			("wlab_esp_1.1")
 
@@ -37,7 +38,7 @@
 #define CONFIG_WLAB_LONGITUDE		("30")
 #define CONFIG_WLAB_TIMEZONE		("Europe/Warsaw")
 
-#endif /* MAIN_USER_CONFIG_H_ */
+#endif /* USER_CONFIG_H_ */
 
 /*  --------------------------------------------------------------------------
  *  end of file
